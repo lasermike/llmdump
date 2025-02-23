@@ -1693,6 +1693,11 @@ common_params_context common_params_parser_init(common_params & params, llama_ex
             params.check_tensors = true;
         }
     ));
+
+    add_opt(common_arg({"--stats" }, "Only show model stats", [](common_params & params) {
+                params.onlyLogStats = true;
+            }));
+
     add_opt(common_arg(
         {"--override-kv"}, "KEY=TYPE:VALUE",
         "advanced option to override model metadata by key. may be specified multiple times.\n"

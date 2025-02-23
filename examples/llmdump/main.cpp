@@ -86,7 +86,6 @@ static void sigint_handler(int signo) {
 #endif
 
 
-
 int main(int argc, char ** argv) {
     common_params params;
     g_params = &params;
@@ -164,6 +163,7 @@ int main(int argc, char ** argv) {
 
     LOG_INF("%s: llama threadpool init, n_threads = %d\n", __func__, (int) params.cpuparams.n_threads);
 
+
     auto * reg = ggml_backend_dev_backend_reg(ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_CPU));
     auto * ggml_threadpool_new_fn = (decltype(ggml_threadpool_new) *) ggml_backend_reg_get_proc_address(reg, "ggml_threadpool_new");
     auto * ggml_threadpool_free_fn = (decltype(ggml_threadpool_free) *) ggml_backend_reg_get_proc_address(reg, "ggml_threadpool_free");
@@ -201,6 +201,17 @@ int main(int argc, char ** argv) {
     if (n_ctx > n_ctx_train) {
         LOG_WRN("%s: model was trained on only %d context tokens (%d specified)\n", __func__, n_ctx_train, n_ctx);
     }
+
+
+    /**********************   **/
+
+    log_llmdump_model_info(model);
+
+    if (params.onlyLogStats) {
+        return 0;
+    }
+
+    /**   *************************/
 
     // auto enable conversation mode if chat template is available
     const bool has_chat_template = common_chat_templates_was_explicit(chat_templates.get());

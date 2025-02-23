@@ -3810,6 +3810,138 @@ struct llama_model_params llama_model_default_params() {
     return result;
 }
 
+//#define LLAMA_LOG_INFO(X) LLAMA_LOG_INFO(X)
+
+
+void log_layer_type(const llama_layer & layer, int layer_index) {
+    // In llama.cpp, a llama_layer typically has:
+    // - Self-attention sub-layer weights: wq, wk, wv, wo
+    // - Feed-forward/MLP sub-layer weights: w1, w2, w3
+    // - Layer norm parameters: attention_norm, ffn_norm
+
+    bool has_attention = (layer.wq && layer.wk && layer.wv && layer.wo);
+    bool has_ffn       = (layer.ffn_gate && layer.ffn_down && layer.ffn_up);
+
+    std::stringstream logOut;
+
+    logOut << "Layer " << layer_index << ":\n";
+    if (has_attention) {
+        logOut << "  - Has self-attention sub-layer.\n";
+    } else {
+        logOut << "  - Missing self-attention weights!\n";
+    }
+
+    if (has_ffn) {
+        logOut << "  - Has feed-forward (MLP) sub-layer.\n";
+    } else {
+        logOut << "  - Missing feed-forward weights!\n";
+    }
+
+    if (layer.attn_norm && layer.ffn_norm) {
+        logOut << "  - Has layer norm parameters (attention_norm, ffn_norm).\n";
+    } else {
+        logOut << "  - Missing one or both layer norm parameters!\n";
+    }
+
+    LLAMA_LOG_INFO(logOut.str().c_str());
+}
+
+// Function to log properties and details of a llama_layer object
+void log_llama_layer_info(const llama_layer& layer) {
+    LLAMA_LOG_INFO("Layer Information:\n");
+
+    // Attention Norm: Layer normalization applied before the attention mechanism
+    LLAMA_LOG_INFO("  - Attention Norm: %p\n", layer.attn_norm);
+    LLAMA_LOG_INFO("  - Attention Norm Bias: %p\n", layer.attn_norm_b);
+
+    // Query, Key, Value, and Output weights for the self-attention mechanism
+    LLAMA_LOG_INFO("  - Query Weight: %p\n", layer.wq);
+    LLAMA_LOG_INFO("  - Key Weight: %p\n", layer.wk);
+    LLAMA_LOG_INFO("  - Value Weight: %p\n", layer.wv);
+    LLAMA_LOG_INFO("  - Output Weight: %p\n", layer.wo);
+
+    // Feed Forward Norm: Layer normalization applied before the feed-forward network
+    LLAMA_LOG_INFO("  - Feed Forward Norm: %p\n", layer.ffn_norm);
+    LLAMA_LOG_INFO("  - Feed Forward Norm Bias: %p\n", layer.ffn_norm_b);
+
+    // Weights for the feed-forward network (typically a two-layer MLP)
+    LLAMA_LOG_INFO("  - Feed Forward Weight 1: %p\n", layer.ffn_gate);
+    LLAMA_LOG_INFO("  - Feed Forward Weight 2: %p\n", layer.ffn_down);
+    LLAMA_LOG_INFO("  - Feed Forward Weight 3: %p\n", layer.ffn_up);
+
+    // Encoder-specific weights for models that use an encoder-decoder architecture
+    LLAMA_LOG_INFO("  - Attention Norm Encoder: %p\n", layer.attn_norm_enc);
+//    LLAMA_LOG_INFO("  - Attention Norm Encoder Bias: %p\n", layer.attn_norm_enc_b);
+    LLAMA_LOG_INFO("  - Query Weight Encoder: %p\n", layer.wq_enc);
+    LLAMA_LOG_INFO("  - Key Weight Encoder: %p\n", layer.wk_enc);
+    LLAMA_LOG_INFO("  - Value Weight Encoder: %p\n", layer.wv_enc);
+    LLAMA_LOG_INFO("  - Output Weight Encoder: %p\n", layer.wo_enc);
+
+    // Feed Forward Norm and weights for the encoder
+    LLAMA_LOG_INFO("  - Feed Forward Norm Encoder: %p\n", layer.ffn_norm_enc);
+//    LLAMA_LOG_INFO("  - Feed Forward Norm Encoder Bias: %p\n", layer.ffn_norm_enc_b);
+    LLAMA_LOG_INFO("  - Feed Forward Weight 1 Encoder: %p\n", layer.ffn_gate_enc);
+    LLAMA_LOG_INFO("  - Feed Forward Weight 2 Encoder: %p\n", layer.ffn_down_enc);
+    LLAMA_LOG_INFO("  - Feed Forward Weight 3 Encoder: %p\n", layer.ffn_up_enc);
+
+    // Cross-attention weights for models that use cross-attention (e.g., encoder-decoder models)
+    LLAMA_LOG_INFO("  - Cross Attention Norm: %p\n", layer.attn_norm_cross);
+//    LLAMA_LOG_INFO("  - Cross Attention Norm Bias: %p\n", layer.cross_attention_norm_b);
+    LLAMA_LOG_INFO("  - Cross Query Weight: %p\n", layer.wq_cross);
+    LLAMA_LOG_INFO("  - Cross Key Weight: %p\n", layer.wk_cross);
+    LLAMA_LOG_INFO("  - Cross Value Weight: %p\n", layer.wv_cross);
+    LLAMA_LOG_INFO("  - Cross Output Weight: %p\n", layer.wo_cross);
+
+    // Feed Forward Norm and weights for the cross-attention mechanism
+    //LLAMA_LOG_INFO("  - Cross Feed Forward Norm: %p\n", layer.cross_ffn_norm);
+    //LLAMA_LOG_INFO("  - Cross Feed Forward Norm Bias: %p\n", layer.cross_ffn_norm_b);
+    //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 1: %p\n", layer.w1_cross);
+    //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 2: %p\n", layer.w2_cross);
+    //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 3: %p\n", layer.w3_cross);
+}
+
+// Function to log properties and statistics of a llama_model object
+void log_llmdump_model_info(const llama_model * model) {
+    LLAMA_LOG_INFO("*** LOG LLAMA INFO ***\n");
+
+    if (model == nullptr) {
+        LLAMA_LOG_ERROR("log_llama_model_info: model is null\n");
+        return;
+    }
+
+    LLAMA_LOG_INFO("Model Name: %s\n", model->name.c_str());
+    LLAMA_LOG_INFO("Model Type: %s\n", model->type_name().c_str());
+    LLAMA_LOG_INFO("Model Architecture: %s\n", model->arch_name().c_str());
+    LLAMA_LOG_INFO("Number of Parameters: %llu\n", model->n_elements());
+    LLAMA_LOG_INFO("Model Size: %zu bytes\n", model->size());
+    LLAMA_LOG_INFO("Number of Devices: %zu\n", model->n_devices());
+
+    LLAMA_LOG_INFO("Hyperparameters:\n");
+    LLAMA_LOG_INFO("  - n_vocab: %d\n", model->hparams.vocab_only);
+    //LLAMA_LOG_INFO("  - n_ctx: %d\n", model->hparams.n_ctx);
+    //LLAMA_LOG_INFO("  - n_embd: %d\n", model->hparams.n_embd);
+    //LLAMA_LOG_INFO("  - n_layer: %d\n", model->hparams.n_layer);
+    //LLAMA_LOG_INFO("  - n_head: %d\n", model->hparams.n_head);
+
+    //LLAMA_LOG_INFO("Vocabulary Size: %zu\n", model->vocab.size());
+
+    LLAMA_LOG_INFO("Load Time: %lld us\n", model->t_load_us);
+    LLAMA_LOG_INFO("Start Time: %lld us\n", model->t_start_us);
+
+    //LLAMA_LOG_INFO("Devices Used:\n");
+    //for (const auto & device : model->devices) {
+    //    LLAMA_LOG_INFO("  - Device ID: %d\n", device.id);
+    //    LLAMA_LOG_INFO("  - Device Type: %s\n", ggml_backend_dev_type_name(device.type));
+    //}
+
+    LLAMA_LOG_INFO("Number of layers: %zu\n", model->layers.size());
+    int layerCount = 0;
+    for (const auto & layer : model->layers) {
+        log_llama_layer_info(layer);
+        //log_layer_type(layer, layerCount++);
+    }
+}
+
 const struct llama_vocab * llama_model_get_vocab(const struct llama_model * model) {
     return &model->vocab;
 }

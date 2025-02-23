@@ -470,6 +470,9 @@ extern "C" {
     LLAMA_API const struct llama_model * llama_get_model   (const struct llama_context * ctx);
     LLAMA_API enum llama_pooling_type    llama_pooling_type(const struct llama_context * ctx);
 
+    LLAMA_API void log_llmdump_model_info(const struct llama_model * model);
+
+
     LLAMA_API const struct llama_vocab * llama_model_get_vocab(const struct llama_model * model);
     LLAMA_API enum llama_rope_type       llama_model_rope_type(const struct llama_model * model);
 
