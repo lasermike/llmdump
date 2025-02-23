@@ -3847,7 +3847,7 @@ void log_layer_type(const llama_layer & layer, int layer_index) {
 }
 
 // Function to log properties and details of a llama_layer object
-void log_llama_layer_info(const llama_layer& layer) {
+void log_llama_layer_info(const llama_layer & layer, int64_t & numMultiplys) {
     LLAMA_LOG_INFO("Layer Information:\n");
 
     // Attention Norm: Layer normalization applied before the attention mechanism
@@ -3898,6 +3898,49 @@ void log_llama_layer_info(const llama_layer& layer) {
     //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 1: %p\n", layer.w1_cross);
     //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 2: %p\n", layer.w2_cross);
     //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 3: %p\n", layer.w3_cross);
+
+    // Count the number of tensor operations in the layer
+    int tensor_count = 0;
+    int multiply_operations = 0;
+
+    auto count_tensor = [&](const ggml_tensor* tensor) {
+        if (tensor) {
+            tensor_count++;
+            multiply_operations += tensor->ne[0] * tensor->ne[1]; // Assuming 2D tensors for simplicity
+        }
+    };
+
+    count_tensor(layer.attn_norm);
+    count_tensor(layer.attn_norm_b);
+    count_tensor(layer.wq);
+    count_tensor(layer.wk);
+    count_tensor(layer.wv);
+    count_tensor(layer.wo);
+    count_tensor(layer.ffn_norm);
+    count_tensor(layer.ffn_norm_b);
+    count_tensor(layer.ffn_gate);
+    count_tensor(layer.ffn_down);
+    count_tensor(layer.ffn_up);
+    count_tensor(layer.attn_norm_enc);
+    count_tensor(layer.wq_enc);
+    count_tensor(layer.wk_enc);
+    count_tensor(layer.wv_enc);
+    count_tensor(layer.wo_enc);
+    count_tensor(layer.ffn_norm_enc);
+    count_tensor(layer.ffn_gate_enc);
+    count_tensor(layer.ffn_down_enc);
+    count_tensor(layer.ffn_up_enc);
+    count_tensor(layer.attn_norm_cross);
+    count_tensor(layer.wq_cross);
+    count_tensor(layer.wk_cross);
+    count_tensor(layer.wv_cross);
+    count_tensor(layer.wo_cross);
+
+    LLAMA_LOG_INFO("  - Number of tensor operations: %d\n", tensor_count);
+    LLAMA_LOG_INFO("  - Number of multiply operations: %d\n", multiply_operations);
+
+    numMultiplys += multiply_operations;
+  
 }
 
 // Function to log properties and statistics of a llama_model object
@@ -3936,10 +3979,13 @@ void log_llmdump_model_info(const llama_model * model) {
 
     LLAMA_LOG_INFO("Number of layers: %zu\n", model->layers.size());
     int layerCount = 0;
+    int64_t numMultiplys = 0;
     for (const auto & layer : model->layers) {
-        log_llama_layer_info(layer);
+        log_llama_layer_info(layer, numMultiplys);
         //log_layer_type(layer, layerCount++);
     }
+
+    LLAMA_LOG_INFO("Total multiplies: %lld\n", numMultiplys);
 }
 
 const struct llama_vocab * llama_model_get_vocab(const struct llama_model * model) {
