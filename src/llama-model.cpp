@@ -12,6 +12,9 @@
 #include <functional>
 #include <map>
 #include <sstream>
+#include <iomanip>
+#include <locale>
+
 #include <stdexcept>
 
 const char * llm_type_name(llm_type type) {
@@ -3810,44 +3813,23 @@ struct llama_model_params llama_model_default_params() {
     return result;
 }
 
-//#define LLAMA_LOG_INFO(X) LLAMA_LOG_INFO(X)
+class CommaNumpunct : public std::numpunct<char> {
+  protected:
+    virtual char do_thousands_sep() const override { return ','; }
 
+    virtual std::string do_grouping() const override { return "\3"; }
+};
 
-void log_layer_type(const llama_layer & layer, int layer_index) {
-    // In llama.cpp, a llama_layer typically has:
-    // - Self-attention sub-layer weights: wq, wk, wv, wo
-    // - Feed-forward/MLP sub-layer weights: w1, w2, w3
-    // - Layer norm parameters: attention_norm, ffn_norm
+std::string convertToCommaSeparatedString(const int64_t numMultiplys) {
+    std::ostringstream oss;
+    oss.imbue(std::locale(std::locale::classic(), new CommaNumpunct));
+    oss << numMultiplys;
 
-    bool has_attention = (layer.wq && layer.wk && layer.wv && layer.wo);
-    bool has_ffn       = (layer.ffn_gate && layer.ffn_down && layer.ffn_up);
-
-    std::stringstream logOut;
-
-    logOut << "Layer " << layer_index << ":\n";
-    if (has_attention) {
-        logOut << "  - Has self-attention sub-layer.\n";
-    } else {
-        logOut << "  - Missing self-attention weights!\n";
-    }
-
-    if (has_ffn) {
-        logOut << "  - Has feed-forward (MLP) sub-layer.\n";
-    } else {
-        logOut << "  - Missing feed-forward weights!\n";
-    }
-
-    if (layer.attn_norm && layer.ffn_norm) {
-        logOut << "  - Has layer norm parameters (attention_norm, ffn_norm).\n";
-    } else {
-        logOut << "  - Missing one or both layer norm parameters!\n";
-    }
-
-    LLAMA_LOG_INFO(logOut.str().c_str());
+    return oss.str();
 }
 
 // Function to log properties and details of a llama_layer object
-void log_llama_layer_info(const llama_layer & layer, int64_t & numMultiplys) {
+void log_llama_layer_info(const llama_layer & layer, int64_t & numTensors, int64_t & numMultiplys) {
     LLAMA_LOG_INFO("Layer Information:\n");
 
     // Attention Norm: Layer normalization applied before the attention mechanism
@@ -3939,6 +3921,7 @@ void log_llama_layer_info(const llama_layer & layer, int64_t & numMultiplys) {
     LLAMA_LOG_INFO("  - Number of tensor operations: %d\n", tensor_count);
     LLAMA_LOG_INFO("  - Number of multiply operations: %d\n", multiply_operations);
 
+    numTensors += tensor_count;
     numMultiplys += multiply_operations;
   
 }
@@ -3979,13 +3962,14 @@ void log_llmdump_model_info(const llama_model * model) {
 
     LLAMA_LOG_INFO("Number of layers: %zu\n", model->layers.size());
     int layerCount = 0;
+    int64_t numTensors = 0;
     int64_t numMultiplys = 0;
     for (const auto & layer : model->layers) {
-        log_llama_layer_info(layer, numMultiplys);
-        //log_layer_type(layer, layerCount++);
+        log_llama_layer_info(layer, numTensors, numMultiplys);
     }
 
-    LLAMA_LOG_INFO("Total multiplies: %lld\n", numMultiplys);
+    LLAMA_LOG_INFO("Total tensors all layers: %s\n", convertToCommaSeparatedString(numTensors).c_str());
+    LLAMA_LOG_INFO("Total multiplys all layers: %s\n", convertToCommaSeparatedString(numMultiplys).c_str());
 }
 
 const struct llama_vocab * llama_model_get_vocab(const struct llama_model * model) {
