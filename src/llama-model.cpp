@@ -3828,107 +3828,64 @@ std::string convertToCommaSeparatedString(const int64_t numMultiplys) {
     return oss.str();
 }
 
-// Function to log properties and details of a llama_layer object
-void log_llama_layer_info(const llama_layer & layer, int64_t & numTensors, int64_t & numMultiplys) {
-    LLAMA_LOG_INFO("Layer Information:\n");
+void log_llama_layer_info(const llama_layer & layer, int layerNum, int64_t & numTensors, int64_t & numMultiplys) {
 
-    // Attention Norm: Layer normalization applied before the attention mechanism
-    LLAMA_LOG_INFO("  - Attention Norm: %p\n", layer.attn_norm);
-    LLAMA_LOG_INFO("  - Attention Norm Bias: %p\n", layer.attn_norm_b);
-
-    // Query, Key, Value, and Output weights for the self-attention mechanism
-    LLAMA_LOG_INFO("  - Query Weight: %p\n", layer.wq);
-    LLAMA_LOG_INFO("  - Key Weight: %p\n", layer.wk);
-    LLAMA_LOG_INFO("  - Value Weight: %p\n", layer.wv);
-    LLAMA_LOG_INFO("  - Output Weight: %p\n", layer.wo);
-
-    // Feed Forward Norm: Layer normalization applied before the feed-forward network
-    LLAMA_LOG_INFO("  - Feed Forward Norm: %p\n", layer.ffn_norm);
-    LLAMA_LOG_INFO("  - Feed Forward Norm Bias: %p\n", layer.ffn_norm_b);
-
-    // Weights for the feed-forward network (typically a two-layer MLP)
-    LLAMA_LOG_INFO("  - Feed Forward Weight 1: %p\n", layer.ffn_gate);
-    LLAMA_LOG_INFO("  - Feed Forward Weight 2: %p\n", layer.ffn_down);
-    LLAMA_LOG_INFO("  - Feed Forward Weight 3: %p\n", layer.ffn_up);
-
-    // Encoder-specific weights for models that use an encoder-decoder architecture
-    LLAMA_LOG_INFO("  - Attention Norm Encoder: %p\n", layer.attn_norm_enc);
-//    LLAMA_LOG_INFO("  - Attention Norm Encoder Bias: %p\n", layer.attn_norm_enc_b);
-    LLAMA_LOG_INFO("  - Query Weight Encoder: %p\n", layer.wq_enc);
-    LLAMA_LOG_INFO("  - Key Weight Encoder: %p\n", layer.wk_enc);
-    LLAMA_LOG_INFO("  - Value Weight Encoder: %p\n", layer.wv_enc);
-    LLAMA_LOG_INFO("  - Output Weight Encoder: %p\n", layer.wo_enc);
-
-    // Feed Forward Norm and weights for the encoder
-    LLAMA_LOG_INFO("  - Feed Forward Norm Encoder: %p\n", layer.ffn_norm_enc);
-//    LLAMA_LOG_INFO("  - Feed Forward Norm Encoder Bias: %p\n", layer.ffn_norm_enc_b);
-    LLAMA_LOG_INFO("  - Feed Forward Weight 1 Encoder: %p\n", layer.ffn_gate_enc);
-    LLAMA_LOG_INFO("  - Feed Forward Weight 2 Encoder: %p\n", layer.ffn_down_enc);
-    LLAMA_LOG_INFO("  - Feed Forward Weight 3 Encoder: %p\n", layer.ffn_up_enc);
-
-    // Cross-attention weights for models that use cross-attention (e.g., encoder-decoder models)
-    LLAMA_LOG_INFO("  - Cross Attention Norm: %p\n", layer.attn_norm_cross);
-//    LLAMA_LOG_INFO("  - Cross Attention Norm Bias: %p\n", layer.cross_attention_norm_b);
-    LLAMA_LOG_INFO("  - Cross Query Weight: %p\n", layer.wq_cross);
-    LLAMA_LOG_INFO("  - Cross Key Weight: %p\n", layer.wk_cross);
-    LLAMA_LOG_INFO("  - Cross Value Weight: %p\n", layer.wv_cross);
-    LLAMA_LOG_INFO("  - Cross Output Weight: %p\n", layer.wo_cross);
-
-    // Feed Forward Norm and weights for the cross-attention mechanism
-    //LLAMA_LOG_INFO("  - Cross Feed Forward Norm: %p\n", layer.cross_ffn_norm);
-    //LLAMA_LOG_INFO("  - Cross Feed Forward Norm Bias: %p\n", layer.cross_ffn_norm_b);
-    //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 1: %p\n", layer.w1_cross);
-    //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 2: %p\n", layer.w2_cross);
-    //LLAMA_LOG_INFO("  - Cross Feed Forward Weight 3: %p\n", layer.w3_cross);
-
-    // Count the number of tensor operations in the layer
     int tensor_count = 0;
-    int multiply_operations = 0;
+    int total_multiply_operations = 0;
 
-    auto count_tensor = [&](const ggml_tensor* tensor) {
+
+    auto get_multiplys = [&tensor_count, &total_multiply_operations](const ggml_tensor * tensor) -> int64_t {
         if (tensor) {
             tensor_count++;
-            multiply_operations += tensor->ne[0] * tensor->ne[1]; // Assuming 2D tensors for simplicity
+            int multiply_operations = tensor->ne[0] * tensor->ne[1] * tensor->ne[2];
+            total_multiply_operations += multiply_operations;
+            return multiply_operations;
         }
+        return 0;
     };
 
-    count_tensor(layer.attn_norm);
-    count_tensor(layer.attn_norm_b);
-    count_tensor(layer.wq);
-    count_tensor(layer.wk);
-    count_tensor(layer.wv);
-    count_tensor(layer.wo);
-    count_tensor(layer.ffn_norm);
-    count_tensor(layer.ffn_norm_b);
-    count_tensor(layer.ffn_gate);
-    count_tensor(layer.ffn_down);
-    count_tensor(layer.ffn_up);
-    count_tensor(layer.attn_norm_enc);
-    count_tensor(layer.wq_enc);
-    count_tensor(layer.wk_enc);
-    count_tensor(layer.wv_enc);
-    count_tensor(layer.wo_enc);
-    count_tensor(layer.ffn_norm_enc);
-    count_tensor(layer.ffn_gate_enc);
-    count_tensor(layer.ffn_down_enc);
-    count_tensor(layer.ffn_up_enc);
-    count_tensor(layer.attn_norm_cross);
-    count_tensor(layer.wq_cross);
-    count_tensor(layer.wk_cross);
-    count_tensor(layer.wv_cross);
-    count_tensor(layer.wo_cross);
+    // Print data row
+    LLAMA_LOG_INFO("%d,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld\n",
+        layerNum,
+        get_multiplys(layer.attn_norm),
+        get_multiplys(layer.attn_norm_b), 
+        get_multiplys(layer.wq),
+        get_multiplys(layer.wk),
+        get_multiplys(layer.wv),
+        get_multiplys(layer.wo),
+        get_multiplys(layer.ffn_norm),
+        get_multiplys(layer.ffn_norm_b),
+        get_multiplys(layer.ffn_gate),
+        get_multiplys(layer.ffn_down),
+        get_multiplys(layer.ffn_up),
+        get_multiplys(layer.attn_norm_enc),
+        get_multiplys(layer.wq_enc),
+        get_multiplys(layer.wk_enc),
+        get_multiplys(layer.wv_enc),
+        get_multiplys(layer.wo_enc), 
+        get_multiplys(layer.ffn_norm_enc),
+        get_multiplys(layer.ffn_gate_enc),
+        get_multiplys(layer.ffn_down_enc),
+        get_multiplys(layer.ffn_up_enc),
+        get_multiplys(layer.attn_norm_cross),
+        get_multiplys(layer.wq_cross),
+        get_multiplys(layer.wk_cross),
+        get_multiplys(layer.wv_cross),
+        get_multiplys(layer.wo_cross));
 
-    LLAMA_LOG_INFO("  - Number of tensor operations: %d\n", tensor_count);
-    LLAMA_LOG_INFO("  - Number of multiply operations: %d\n", multiply_operations);
+
+
+    //LLAMA_LOG_INFO("  - Number of tensor operations: %d\n", tensor_count);
+    //LLAMA_LOG_INFO("  - Number of multiply operations: %d\n", multiply_operations);
 
     numTensors += tensor_count;
-    numMultiplys += multiply_operations;
-  
+    numMultiplys += total_multiply_operations;
+
 }
 
 // Function to log properties and statistics of a llama_model object
 void log_llmdump_model_info(const llama_model * model) {
-    LLAMA_LOG_INFO("*** LOG LLAMA INFO ***\n");
+    LLAMA_LOG_INFO("********* LOG LLAMA INFO ***********\n");
 
     if (model == nullptr) {
         LLAMA_LOG_ERROR("log_llama_model_info: model is null\n");
@@ -3960,12 +3917,18 @@ void log_llmdump_model_info(const llama_model * model) {
     //    LLAMA_LOG_INFO("  - Device Type: %s\n", ggml_backend_dev_type_name(device.type));
     //}
 
-    LLAMA_LOG_INFO("Number of layers: %zu\n", model->layers.size());
-    int layerCount = 0;
+    LLAMA_LOG_INFO("Number of layers: %zu\n\n", model->layers.size());
+
+    // Print header row 
+    LLAMA_LOG_INFO("Layer,attn_norm,attn_norm_b,wq,wk,wv,wo,ffn_norm,ffn_norm_b,ffn_gate,ffn_down,ffn_up,"
+        "attn_norm_enc,wq_enc,wk_enc,wv_enc,wo_enc,ffn_norm_enc,ffn_gate_enc,ffn_down_enc,ffn_up_enc,"
+        "attn_norm_cr,wq_cross,wk_cross,wv_cross,wo_cross\n");
+int layerCount = 0;
     int64_t numTensors = 0;
     int64_t numMultiplys = 0;
     for (const auto & layer : model->layers) {
-        log_llama_layer_info(layer, numTensors, numMultiplys);
+        log_llama_layer_info(layer, layerCount, numTensors, numMultiplys);
+        layerCount++;
     }
 
     LLAMA_LOG_INFO("Total tensors all layers: %s\n", convertToCommaSeparatedString(numTensors).c_str());
