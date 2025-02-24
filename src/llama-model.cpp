@@ -3932,7 +3932,7 @@ int layerCount = 0;
     }
 
     LLAMA_LOG_INFO("Total tensors all layers: %s\n", convertToCommaSeparatedString(numTensors).c_str());
-    LLAMA_LOG_INFO("Total multiplys all layers: %s\n", convertToCommaSeparatedString(numMultiplys).c_str());
+    LLAMA_LOG_INFO("Total parameters all layers: %s\n", convertToCommaSeparatedString(numMultiplys).c_str());
 }
 
 const struct llama_vocab * llama_model_get_vocab(const struct llama_model * model) {
