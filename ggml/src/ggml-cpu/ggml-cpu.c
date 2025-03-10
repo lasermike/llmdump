@@ -12826,6 +12826,9 @@ static void ggml_compute_forward(struct ggml_compute_params * params, struct ggm
         return;
     }
 
+
+    uint64_t tensorStartUs = ggml_time_us();
+
     // extra_buffer op?
     if (ggml_cpu_extra_compute_forward(params, tensor)) return;
 
@@ -13191,6 +13194,13 @@ static void ggml_compute_forward(struct ggml_compute_params * params, struct ggm
                 GGML_ABORT("fatal error");
             }
     }
+
+    uint64_t tensorDoneUs = ggml_time_us();
+
+    uint64_t tensorDuration = tensorDoneUs - tensorStartUs;
+
+    tensorStats_add_time(tensor->op, tensorDuration);
+
 }
 
 // Android's libc implementation "bionic" does not support setting affinity
@@ -14196,12 +14206,45 @@ struct ggml_threadpool * ggml_threadpool_new(struct ggml_threadpool_params * tpp
     return ggml_threadpool_new_impl(tpp, NULL, NULL);
 }
 
+
+void print_with_commas(uint64_t value, char* formatted) {
+    char buffer[30]; // Buffer to hold the formatted number
+    ; // Buffer to hold the final string with commas
+    int len, i, j, comma_count;
+
+    // Convert the number to a string
+    sprintf(buffer, "%llu", value);
+    len = strlen(buffer);
+
+    // Calculate the number of commas needed
+    comma_count = (len - 1) / 3;
+
+    // Insert commas into the formatted string
+    for (i = len - 1, j = len + comma_count; i >= 0; i--, j--) {
+        if ((len - i) % 3 == 0 && i != len - 1) {
+            formatted[j--] = ',';
+        }
+        formatted[j] = buffer[i];
+    }
+
+    // Null-terminate the formatted string
+    formatted[len + comma_count + 1] = '\0';
+
+    // Print the formatted string
+    printf("%s\n", formatted);
+}
+
+
 enum ggml_status ggml_graph_compute(struct ggml_cgraph * cgraph, struct ggml_cplan * cplan) {
     ggml_cpu_init();
 
     GGML_ASSERT(cplan);
     GGML_ASSERT(cplan->n_threads > 0);
     GGML_ASSERT(cplan->work_size == 0 || cplan->work_data != NULL);
+
+    uint64_t threadPoolStartUs = ggml_time_us();
+
+
 
     int n_threads                               = cplan->n_threads;
     struct ggml_threadpool * threadpool = cplan->threadpool;
@@ -14262,6 +14305,15 @@ enum ggml_status ggml_graph_compute(struct ggml_cgraph * cgraph, struct ggml_cpl
     if (disposable_threadpool) {
         ggml_threadpool_free(threadpool);
     }
+
+    uint64_t threadPoolDoneUs = ggml_time_us();
+
+
+    uint64_t threadPoolDuration = threadPoolDoneUs - threadPoolStartUs;
+
+    //char formatted[100];
+    //print_with_commas(threadPoolDuration, formatted);
+    //GGML_LOG_INFO("*Compute duration: %s\n", formatted);
 
     return ret;
 }

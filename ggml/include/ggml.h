@@ -2188,6 +2188,21 @@ extern "C" {
     GGML_API void                          ggml_threadpool_params_init   (struct ggml_threadpool_params * p, int n_threads);
     GGML_API bool                          ggml_threadpool_params_match  (const struct ggml_threadpool_params * p0, const struct ggml_threadpool_params * p1);
 
+    struct tensor_stats
+    {
+        uint64_t timeUs;
+
+    };
+
+    GGML_API void tensorStats_reset();
+    GGML_API void tensorStats_add_time(enum ggml_op op, int64_t duration);
+
+    //void reset_tensor_stats(tensor_stats& stats)
+    //{
+    //    stats.timeUs = 0;
+    //}
+
+
 #ifdef  __cplusplus
 }
 #endif

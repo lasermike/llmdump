@@ -906,6 +906,8 @@ int main(int argc, char ** argv) {
                     common_sampler_reset(smpl);
                 }
                 is_interacting = false;
+
+                tensorStats_reset();
             }
         }
 

@@ -3837,7 +3837,7 @@ void log_llama_layer_info(const llama_layer & layer, int layerNum, int64_t & num
     auto get_multiplys = [&tensor_count, &total_multiply_operations](const ggml_tensor * tensor) -> int64_t {
         if (tensor) {
             tensor_count++;
-            int multiply_operations = tensor->ne[0] * tensor->ne[1] * tensor->ne[2];
+            int64_t multiply_operations = tensor->ne[0] * tensor->ne[1] * tensor->ne[2];
             total_multiply_operations += multiply_operations;
             return multiply_operations;
         }

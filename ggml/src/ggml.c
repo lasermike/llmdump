@@ -63,6 +63,7 @@
 // precomputed f32 table for f16 (256 KB) (ggml-impl.h)
 float ggml_table_f32_f16[1 << 16];
 
+
 #if (defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)) && \
     (!defined(TARGET_OS_TV) && !defined(TARGET_OS_WATCH))
 #include <unistd.h>
@@ -74,6 +75,8 @@ float ggml_table_f32_f16[1 << 16];
 #include <unwind.h>
 #include <dlfcn.h>
 #include <stdio.h>
+
+
 
 struct backtrace_state {
     void ** current;
@@ -6509,3 +6512,23 @@ bool ggml_threadpool_params_match(const struct ggml_threadpool_params * p0, cons
     if (p0->strict_cpu     != p1->strict_cpu )    return false;
     return memcmp(p0->cpumask, p1->cpumask, GGML_MAX_N_THREADS) == 0;
 }
+
+
+/// PERF STUFF
+struct tensor_stats tensorStatsByOp[GGML_OP_COUNT];
+
+void tensorStats_reset()
+{
+    for (int i = 0; i < GGML_OP_COUNT; i++)
+    {
+        tensorStatsByOp[i].timeUs = 0;
+    }
+}
+
+void tensorStats_add_time(enum ggml_op op, int64_t duration)
+{
+    tensorStatsByOp[op].timeUs += duration;
+}
+
+///
+
