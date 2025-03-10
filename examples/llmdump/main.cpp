@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <thread>
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 #include <signal.h>
@@ -42,6 +43,11 @@ static std::ostringstream       * g_output_ss;
 static std::vector<llama_token> * g_output_tokens;
 static bool is_interacting  = false;
 static bool need_insert_eot = false;
+
+int graphwindow_main();
+int graphwindow_addData(__int64* values, int numValues);
+
+int64_t tensorDurationsUs[GGML_OP_COUNT];
 
 static void print_usage(int argc, char ** argv) {
     (void) argc;
@@ -204,6 +210,8 @@ int main(int argc, char ** argv) {
 
 
     /**********************   **/
+
+    std::thread graphWindowThread(graphwindow_main);
 
     log_llmdump_model_info(model);
 
@@ -907,7 +915,11 @@ int main(int argc, char ** argv) {
                 }
                 is_interacting = false;
 
+                tensorStats_copy(tensorDurationsUs);
+                graphwindow_addData(tensorDurationsUs, GGML_OP_COUNT);
+
                 tensorStats_reset();
+
             }
         }
 

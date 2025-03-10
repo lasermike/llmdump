@@ -1,0 +1,401 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2B7A8ADC-D277-357A-910E-24EA7FAC12BF}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>llmdump</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\bin\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">llmdump.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">llmdump</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\bin\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">llmdump.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">llmdump</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\bin\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">llmdump.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">llmdump</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\bin\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">llmdump.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">llmdump</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\mmatsel\source\repos\imgui;C:\Users\mmatsel\source\repos\imgui\backends;C:\Users\mmatsel\source\repos\implot</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\mmatsel\source\repos\imgui;C:\Users\mmatsel\source\repos\imgui\backends;C:\Users\mmatsel\source\repos\implot</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\mmatsel\source\repos\imgui;C:\Users\mmatsel\source\repos\imgui\backends;C:\Users\mmatsel\source\repos\implot</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\mmatsel\source\repos\imgui;C:\Users\mmatsel\source\repos\imgui\backends;C:\Users\mmatsel\source\repos\implot</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8 /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\common\Debug\common.lib;..\..\src\Debug\llama.lib;..\..\ggml\src\Debug\ggml.lib;..\..\ggml\src\Debug\ggml-cpu.lib;..\..\ggml\src\Debug\ggml-base.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D3D12.lib;DXGI.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/Debug/llmdump.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/mmatsel/source/repos/llama.cpp/build/bin/Debug/llmdump.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8 /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\common\Release\common.lib;..\..\src\Release\llama.lib;..\..\ggml\src\Release\ggml.lib;..\..\ggml\src\Release\ggml-cpu.lib;..\..\ggml\src\Release\ggml-base.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D3D12.lib;DXGI.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/Release/llmdump.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/mmatsel/source/repos/llama.cpp/build/bin/Release/llmdump.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8 /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\common\MinSizeRel\common.lib;..\..\src\MinSizeRel\llama.lib;..\..\ggml\src\MinSizeRel\ggml.lib;..\..\ggml\src\MinSizeRel\ggml-cpu.lib;..\..\ggml\src\MinSizeRel\ggml-base.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D3D12.lib;DXGI.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/MinSizeRel/llmdump.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/mmatsel/source/repos/llama.cpp/build/bin/MinSizeRel/llmdump.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8 /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;LLAMA_SHARED;GGML_USE_CPU;GGML_SHARED;GGML_BACKEND_SHARED;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\mmatsel\source\repos\llama.cpp\examples;C:\Users\mmatsel\source\repos\llama.cpp\common\.;C:\Users\mmatsel\source\repos\llama.cpp\src\.;C:\Users\mmatsel\source\repos\llama.cpp\src\..\include;C:\Users\mmatsel\source\repos\llama.cpp\src\..\common;C:\Users\mmatsel\source\repos\llama.cpp\ggml\src\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\common\RelWithDebInfo\common.lib;..\..\src\RelWithDebInfo\llama.lib;..\..\ggml\src\RelWithDebInfo\ggml.lib;..\..\ggml\src\RelWithDebInfo\ggml-cpu.lib;..\..\ggml\src\RelWithDebInfo\ggml-base.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;D3D12.lib;DXGI.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/RelWithDebInfo/llmdump.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/mmatsel/source/repos/llama.cpp/build/bin/RelWithDebInfo/llmdump.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\mmatsel\source\repos\llama.cpp\examples\llmdump\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/mmatsel/source/repos/llama.cpp/examples/llmdump/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/mmatsel/source/repos/llama.cpp -BC:/Users/mmatsel/source/repos/llama.cpp/build --check-stamp-file C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\examples\llmdump\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/mmatsel/source/repos/llama.cpp/examples/llmdump/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/mmatsel/source/repos/llama.cpp -BC:/Users/mmatsel/source/repos/llama.cpp/build --check-stamp-file C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\examples\llmdump\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/mmatsel/source/repos/llama.cpp/examples/llmdump/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/mmatsel/source/repos/llama.cpp -BC:/Users/mmatsel/source/repos/llama.cpp/build --check-stamp-file C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\examples\llmdump\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/mmatsel/source/repos/llama.cpp/examples/llmdump/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/mmatsel/source/repos/llama.cpp -BC:/Users/mmatsel/source/repos/llama.cpp/build --check-stamp-file C:/Users/mmatsel/source/repos/llama.cpp/build/examples/llmdump/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\mmatsel\source\repos\llama.cpp\build\examples\llmdump\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\imgui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="..\..\..\..\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\..\..\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\..\..\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\..\..\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\..\..\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\..\..\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\..\..\implot\implot.cpp" />
+    <ClCompile Include="..\..\..\..\implot\implot_items.cpp" />
+    <ClCompile Include="..\..\..\examples\llmdump\graphwindow.cpp" />
+    <ClCompile Include="C:\Users\mmatsel\source\repos\llama.cpp\examples\llmdump\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\mmatsel\source\repos\llama.cpp\build\ZERO_CHECK.vcxproj">
+      <Project>{6DABA74E-FA7F-3497-808A-737995BEA57B}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\mmatsel\source\repos\llama.cpp\build\common\build_info.vcxproj">
+      <Project>{8AB39004-FDD9-3992-B7BB-6A2FF605F88F}</Project>
+      <Name>build_info</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\mmatsel\source\repos\llama.cpp\build\common\common.vcxproj">
+      <Project>{E46382CC-5886-3406-8720-3D5F7FDC7A81}</Project>
+      <Name>common</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\mmatsel\source\repos\llama.cpp\build\ggml\src\ggml.vcxproj">
+      <Project>{BA00891B-152F-3704-8434-8444CA3784FF}</Project>
+      <Name>ggml</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\mmatsel\source\repos\llama.cpp\build\ggml\src\ggml-base.vcxproj">
+      <Project>{7FA24225-47ED-37FD-A1DF-D4916A2196E2}</Project>
+      <Name>ggml-base</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\mmatsel\source\repos\llama.cpp\build\ggml\src\ggml-cpu.vcxproj">
+      <Project>{CE1E9ADB-9DC3-3EC9-906F-27AE7701F6A3}</Project>
+      <Name>ggml-cpu</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\mmatsel\source\repos\llama.cpp\build\src\llama.vcxproj">
+      <Project>{12C6BE3F-36A1-3A00-A778-89150708E5EF}</Project>
+      <Name>llama</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\imgui\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="..\..\..\..\imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="..\..\..\..\imgui\imconfig.h" />
+    <ClInclude Include="..\..\..\..\imgui\imgui.h" />
+    <ClInclude Include="..\..\..\..\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\..\..\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\..\..\..\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\..\..\..\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\..\..\..\implot\implot.h" />
+    <ClInclude Include="..\..\..\..\implot\implot_internal.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

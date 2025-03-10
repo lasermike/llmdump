@@ -6525,6 +6525,14 @@ void tensorStats_reset()
     }
 }
 
+void tensorStats_copy(int64_t* dest)
+{
+    for (int i = 0; i < GGML_OP_COUNT; i++)
+    {
+        dest[i] = tensorStatsByOp[i].timeUs;
+    }
+}
+
 void tensorStats_add_time(enum ggml_op op, int64_t duration)
 {
     tensorStatsByOp[op].timeUs += duration;

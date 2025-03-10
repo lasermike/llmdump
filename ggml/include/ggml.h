@@ -2195,6 +2195,7 @@ extern "C" {
     };
 
     GGML_API void tensorStats_reset();
+    GGML_API void tensorStats_copy(int64_t*);
     GGML_API void tensorStats_add_time(enum ggml_op op, int64_t duration);
 
     //void reset_tensor_stats(tensor_stats& stats)
