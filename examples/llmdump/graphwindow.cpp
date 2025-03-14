@@ -210,26 +210,36 @@ const int maxSamples = 1024;
 const int maxGraphs = 256;
 
 __int64 valuesToGraph[maxGraphs][maxSamples];
+int showInGraphNum[maxGraphs] = { 0 };
 int numSamples = 0;
-int lastNumValues = 0;
+int lastNumGraphs = 0;
 
 __int64 ys[maxSamples];
 
 
-int graphwindow_addData(__int64* values, int numValues)
+int graphwindow_addData(__int64* values, int numGraphs)
 {
-    if (numValues < maxGraphs)
+    if (numGraphs < maxGraphs)
     {
-        for (int i = 0; i < numValues; i++)
+        for (int i = 0; i < numGraphs; i++)
         {
             valuesToGraph[i][numSamples] = values[i];   // Poor cache...
-            if (values[i] > 0)
+            if (values[i] > 4000000 && showInGraphNum[i] < 3)
             {
-                lastNumValues = numValues; //TMPTMP
+                showInGraphNum[i] = 3;
             }
+            else if (values[i] > 1000 && showInGraphNum[i] < 2)
+            {
+                showInGraphNum[i] = 2;
+            }
+            else if (values[i] > 0 && showInGraphNum[i] < 1)
+            {
+                showInGraphNum[i] = 1;
+            }
+
         }
 
-        lastNumValues = numValues;
+        lastNumGraphs = numGraphs;
         numSamples++;
     }
 
@@ -249,7 +259,7 @@ int graphwindow_main()
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Tensor time", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, nullptr, nullptr, wc.hInstance, nullptr);
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Tensor time", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 1000, nullptr, nullptr, wc.hInstance, nullptr);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
@@ -342,16 +352,47 @@ int graphwindow_main()
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("##LLM Analysis");                          // Create a window called "Hello, world!" and append into it.
+        bool itsTrue = true;
+        ImGui::Begin("##LLM Analysis", &itsTrue, ImGuiWindowFlags_NoTitleBar);                          // Create a window called "Hello, world!" and append into it.
         {
-            if (ImPlot::BeginPlot("Time spent in tensor ops (us)", ImVec2(-1, -1))) {
-                //ImPlot::SetupAxes("x", "y");
-                for (int i = 0; i < lastNumValues; i++)
+            if (ImPlot::BeginPlot("Tensor op time < 1000 us", ImVec2(1280, 300))) {
+                ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+                for (int i = 0; i < lastNumGraphs; i++)
                 {
-                    ImPlot::PlotLine(GGML_OP_NAME[i], ys, &valuesToGraph[i][0], numSamples);
+                    if (showInGraphNum[i] == 1)
+                    {
+                        ImPlot::PlotLine(GGML_OP_NAME[i], ys, &valuesToGraph[i][0], numSamples);
+                    }
                 }
                 ImPlot::EndPlot();
             }
+
+            // Larger graph scale
+            if (ImPlot::BeginPlot("Tensor ops time scale > 1000 us", ImVec2(1280, 300))) {
+                ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+                for (int i = 0; i < lastNumGraphs; i++)
+                {
+                    if (showInGraphNum[i] == 2)
+                    {
+                        ImPlot::PlotLine(GGML_OP_NAME[i], ys, &valuesToGraph[i][0], numSamples);
+                    }
+                }
+                ImPlot::EndPlot();
+            }
+
+            // Larger graph scale
+            if (ImPlot::BeginPlot("Tensor ops time scale > 3000000 us", ImVec2(1280, 300))) {
+                ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+                for (int i = 0; i < lastNumGraphs; i++)
+                {
+                    if (showInGraphNum[i] == 3)
+                    {
+                        ImPlot::PlotLine(GGML_OP_NAME[i], ys, &valuesToGraph[i][0], numSamples);
+                    }
+                }
+                ImPlot::EndPlot();
+            }
+
         }
         ImGui::End();
 
