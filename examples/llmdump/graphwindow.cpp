@@ -14,6 +14,8 @@
 #include <tchar.h>
 #include <math.h>
 
+#include "llama-model.h"
+
 #ifdef _DEBUG
 #define DX12_ENABLE_DEBUG_LAYER
 #endif
@@ -208,39 +210,51 @@ static const char* GGML_OP_NAME[83] = { //GGML_OP_COUNT
 
 const int maxSamples = 1024;
 const int maxGraphs = 256;
+const int maxLayerTensors = 1024;
 
-__int64 valuesToGraph[maxGraphs][maxSamples];
+__int64 rawTensorsToGraph[maxGraphs][maxSamples];
 int showInGraphNum[maxGraphs] = { 0 };
 int numSamples = 0;
-int lastNumGraphs = 0;
+int lastNumRawTensors = 0;
+int lastNumlayerTensors = 0;
 
-__int64 ys[maxSamples];
+__int64 xs[maxSamples];
+
+__int64 layerTensorSamples[maxLayerTensors][maxSamples];
 
 
-int graphwindow_addData(__int64* values, int numGraphs)
+int graphwindow_addData(__int64* rawTensorValues, int numRawTensors, __int64* layerTensorValues, int numlayerTensors)
 {
-    if (numGraphs < maxGraphs)
+    if (numRawTensors < maxGraphs)
     {
-        for (int i = 0; i < numGraphs; i++)
+        for (int i = 0; i < numRawTensors; i++)
         {
-            valuesToGraph[i][numSamples] = values[i];   // Poor cache...
-            if (values[i] > 4000000 && showInGraphNum[i] < 3)
+            rawTensorsToGraph[i][numSamples] = rawTensorValues[i];   // Poor cache...
+            if (rawTensorValues[i] > 4000000 && showInGraphNum[i] < 3)
             {
                 showInGraphNum[i] = 3;
             }
-            else if (values[i] > 1000 && showInGraphNum[i] < 2)
+            else if (rawTensorValues[i] > 1000 && showInGraphNum[i] < 2)
             {
                 showInGraphNum[i] = 2;
             }
-            else if (values[i] > 0 && showInGraphNum[i] < 1)
+            else if (rawTensorValues[i] > 0 && showInGraphNum[i] < 1)
             {
                 showInGraphNum[i] = 1;
             }
 
         }
 
-        lastNumGraphs = numGraphs;
-        numSamples++;
+        lastNumRawTensors = numRawTensors;
+
+        for (int i = 0; i < numlayerTensors; i++)
+        {
+            layerTensorSamples[i][numSamples] = layerTensorValues[i];
+        }
+
+        lastNumlayerTensors = numlayerTensors;
+
+        numSamples++; // TODO: atomic
     }
 
     return 0;
@@ -248,11 +262,11 @@ int graphwindow_addData(__int64* values, int numGraphs)
 
 
 // Main code
-int graphwindow_main()
+int graphwindow_main(llama_model* model)
 {
     for (int i = 0; i < maxSamples; i++)
     {
-        ys[i] = i;
+        xs[i] = i;
     }
 
     // Create application window
@@ -355,44 +369,58 @@ int graphwindow_main()
         bool itsTrue = true;
         ImGui::Begin("##LLM Analysis", &itsTrue, ImGuiWindowFlags_NoTitleBar);                          // Create a window called "Hello, world!" and append into it.
         {
-            if (ImPlot::BeginPlot("Tensor op time < 1000 us", ImVec2(1280, 300))) {
-                ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-                for (int i = 0; i < lastNumGraphs; i++)
-                {
-                    if (showInGraphNum[i] == 1)
-                    {
-                        ImPlot::PlotLine(GGML_OP_NAME[i], ys, &valuesToGraph[i][0], numSamples);
-                    }
-                }
-                ImPlot::EndPlot();
+            static int uiMode = 0;
+            {
+                ImGui::RadioButton("Layers", &uiMode, 0);
+                ImGui::SameLine();
+                ImGui::RadioButton("Tensors", &uiMode, 1);
             }
 
-            // Larger graph scale
-            if (ImPlot::BeginPlot("Tensor ops time scale > 1000 us", ImVec2(1280, 300))) {
-                ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-                for (int i = 0; i < lastNumGraphs; i++)
-                {
-                    if (showInGraphNum[i] == 2)
-                    {
-                        ImPlot::PlotLine(GGML_OP_NAME[i], ys, &valuesToGraph[i][0], numSamples);
-                    }
-                }
-                ImPlot::EndPlot();
-            }
 
-            // Larger graph scale
-            if (ImPlot::BeginPlot("Tensor ops time scale > 3000000 us", ImVec2(1280, 300))) {
-                ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-                for (int i = 0; i < lastNumGraphs; i++)
-                {
-                    if (showInGraphNum[i] == 3)
-                    {
-                        ImPlot::PlotLine(GGML_OP_NAME[i], ys, &valuesToGraph[i][0], numSamples);
-                    }
-                }
-                ImPlot::EndPlot();
-            }
+            if (uiMode == 0)
+            {
 
+            }
+            else if (uiMode == 1)
+            {
+                if (ImPlot::BeginPlot("Tensor op time < 1000 us", ImVec2(1280, 300))) {
+                    ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+                    for (int i = 0; i < lastNumRawTensors; i++)
+                    {
+                        if (showInGraphNum[i] == 1)
+                        {
+                            ImPlot::PlotLine(GGML_OP_NAME[i], xs, &rawTensorsToGraph[i][0], numSamples);
+                        }
+                    }
+                    ImPlot::EndPlot();
+                }
+
+                // Larger graph scale
+                if (ImPlot::BeginPlot("Tensor ops time scale > 1000 us", ImVec2(1280, 300))) {
+                    ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+                    for (int i = 0; i < lastNumRawTensors; i++)
+                    {
+                        if (showInGraphNum[i] == 2)
+                        {
+                            ImPlot::PlotLine(GGML_OP_NAME[i], xs, &rawTensorsToGraph[i][0], numSamples);
+                        }
+                    }
+                    ImPlot::EndPlot();
+                }
+
+                // Larger graph scale
+                if (ImPlot::BeginPlot("Tensor ops time scale > 3000000 us", ImVec2(1280, 300))) {
+                    ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+                    for (int i = 0; i < lastNumRawTensors; i++)
+                    {
+                        if (showInGraphNum[i] == 3)
+                        {
+                            ImPlot::PlotLine(GGML_OP_NAME[i], xs, &rawTensorsToGraph[i][0], numSamples);
+                        }
+                    }
+                    ImPlot::EndPlot();
+                }
+            }
         }
         ImGui::End();
 

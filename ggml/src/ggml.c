@@ -6516,6 +6516,7 @@ bool ggml_threadpool_params_match(const struct ggml_threadpool_params * p0, cons
 
 /// PERF STUFF
 struct tensor_stats tensorStatsByOp[GGML_OP_COUNT];
+struct tensor_stats tensorStatsByLayerOp[TensorLayerOperationsMax]; //TODO: allocate size dynamically
 
 void tensorStats_reset()
 {
@@ -6523,19 +6524,33 @@ void tensorStats_reset()
     {
         tensorStatsByOp[i].timeUs = 0;
     }
-}
 
-void tensorStats_copy(int64_t* dest)
-{
-    for (int i = 0; i < GGML_OP_COUNT; i++)
+    for (int i = 0; i < TensorLayerOperationsMax; i++)
     {
-        dest[i] = tensorStatsByOp[i].timeUs;
+        tensorStatsByLayerOp[i].timeUs = 0;
     }
 }
 
-void tensorStats_add_time(enum ggml_op op, int64_t duration)
+void tensorStats_copy(int64_t* statsByOpDest, int64_t* statsByTensorByOpDest)
 {
-    tensorStatsByOp[op].timeUs += duration;
+    for (int i = 0; i < GGML_OP_COUNT; i++)
+    {
+        statsByOpDest[i] = tensorStatsByOp[i].timeUs;
+    }
+
+    for (int i = 0; i < TensorLayerOperationsMax; i++)
+    {
+        statsByTensorByOpDest[i] = tensorStatsByLayerOp[i].timeUs;
+    }
+
+}
+
+void tensorStats_add_time(const struct ggml_tensor* tensor, int tensorNumber, int64_t durationUs)
+{
+    tensorStatsByOp[tensor->op].timeUs += durationUs;
+
+    GGML_ASSERT(tensorNumber < TensorLayerOperationsMax);
+    tensorStatsByLayerOp[tensorNumber].timeUs += durationUs;
 }
 
 ///

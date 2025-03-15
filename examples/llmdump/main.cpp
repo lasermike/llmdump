@@ -44,10 +44,11 @@ static std::vector<llama_token> * g_output_tokens;
 static bool is_interacting  = false;
 static bool need_insert_eot = false;
 
-int graphwindow_main();
-int graphwindow_addData(__int64* values, int numValues);
+int graphwindow_main(llama_model* model);
+int graphwindow_addData(__int64* values, int numValues, __int64* layerTensorValues, int numlayerTensors);
 
 int64_t tensorDurationsUs[GGML_OP_COUNT];
+int64_t tensorOpDurationUs[TensorLayerOperationsMax];
 
 static void print_usage(int argc, char ** argv) {
     (void) argc;
@@ -211,13 +212,13 @@ int main(int argc, char ** argv) {
 
     /**********************   **/
 
-    std::thread graphWindowThread(graphwindow_main);
-
     log_llmdump_model_info(model);
 
     if (params.onlyLogStats) {
         return 0;
     }
+
+    std::thread graphWindowThread(graphwindow_main, model);
 
     /**   *************************/
 
@@ -915,8 +916,8 @@ int main(int argc, char ** argv) {
                 }
                 is_interacting = false;
 
-                tensorStats_copy(tensorDurationsUs);
-                graphwindow_addData(tensorDurationsUs, GGML_OP_COUNT);
+                tensorStats_copy(tensorDurationsUs, tensorOpDurationUs);
+                graphwindow_addData(tensorDurationsUs, GGML_OP_COUNT, tensorOpDurationUs, TensorLayerOperationsMax);
 
                 tensorStats_reset();
 

@@ -2194,15 +2194,12 @@ extern "C" {
 
     };
 
+    // PERF STUFF
+#define TensorLayerOperationsMax 1024
+
     GGML_API void tensorStats_reset();
-    GGML_API void tensorStats_copy(int64_t*);
-    GGML_API void tensorStats_add_time(enum ggml_op op, int64_t duration);
-
-    //void reset_tensor_stats(tensor_stats& stats)
-    //{
-    //    stats.timeUs = 0;
-    //}
-
+    GGML_API void tensorStats_copy(int64_t* statsByOpDest, int64_t* statsByTensorByOpDest);
+    GGML_API void tensorStats_add_time(const struct ggml_tensor* tensor, int tensorNumber, int64_t durationUs);
 
 #ifdef  __cplusplus
 }

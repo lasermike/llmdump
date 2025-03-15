@@ -12819,7 +12819,7 @@ static void ggml_compute_forward_opt_step_adamw(
 }
 /////////////////////////////////
 
-static void ggml_compute_forward(struct ggml_compute_params * params, struct ggml_tensor * tensor) {
+static void ggml_compute_forward(struct ggml_compute_params * params, struct ggml_tensor * tensor, int node_n) {
     GGML_ASSERT(params);
 
     if (tensor->op == GGML_OP_NONE || ggml_is_empty(tensor)) {
@@ -13199,7 +13199,7 @@ static void ggml_compute_forward(struct ggml_compute_params * params, struct ggm
 
     uint64_t tensorDuration = tensorDoneUs - tensorStartUs;
 
-    tensorStats_add_time(tensor->op, tensorDuration);
+    tensorStats_add_time(tensor, node_n, tensorDuration);
 
 }
 
@@ -13970,7 +13970,7 @@ static thread_ret_t ggml_graph_compute_thread(void * data) {
     for (int node_n = 0; node_n < cgraph->n_nodes && atomic_load_explicit(&tp->abort, memory_order_relaxed) != node_n; node_n++) {
         struct ggml_tensor * node = cgraph->nodes[node_n];
 
-        ggml_compute_forward(&params, node);
+        ggml_compute_forward(&params, node, node_n);
 
         if (state->ith == 0 && cplan->abort_callback &&
                 cplan->abort_callback(cplan->abort_callback_data)) {
