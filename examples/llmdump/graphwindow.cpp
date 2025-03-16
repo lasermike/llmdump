@@ -15,6 +15,7 @@
 #include <math.h>
 
 #include "llama-model.h"
+#include "log.h"
 
 #ifdef _DEBUG
 #define DX12_ENABLE_DEBUG_LAYER
@@ -26,6 +27,12 @@
 #endif
 
 #include "implot.h"
+
+// Split
+#include <iostream>
+#include <sstream>
+#include <vector>
+
 
 // Config for example app
 static const int APP_NUM_FRAMES_IN_FLIGHT = 2;
@@ -210,21 +217,43 @@ static const char* GGML_OP_NAME[83] = { //GGML_OP_COUNT
 
 const int maxSamples = 1024;
 const int maxGraphs = 256;
-const int maxLayerTensors = 1024;
+const int maxLayerTensors = 512;
+const int maxTensorsPerLayer = 9;
+
+const int maxLayers = 28;
+const int maxLayersIncludingInputOutput = 30;
 
 __int64 rawTensorsToGraph[maxGraphs][maxSamples];
 int showInGraphNum[maxGraphs] = { 0 };
 int numSamples = 0;
+int currentUISample = 0;
 int lastNumRawTensors = 0;
-int lastNumlayerTensors = 0;
+int numLayerTensors = 0;
 
 __int64 xs[maxSamples];
 
 __int64 layerTensorSamples[maxLayerTensors][maxSamples];
+__int64 layerSamples[maxSamples][maxLayersIncludingInputOutput * maxTensorsPerLayer];
 
+#define LAYER_INDEX_UNDEFINED -1
+#define LAYER_INDEX_INPUT 0
+#define LAYER_INDEX_OUTPUT maxLayers + 1
 
-int graphwindow_addData(__int64* rawTensorValues, int numRawTensors, __int64* layerTensorValues, int numlayerTensors)
+struct LayerTensorInfo
 {
+    std::string name;
+    int layerIndex;
+    int tensorWithinLayerIndex;
+    int tensorIndex;
+};
+
+std::vector<LayerTensorInfo> layerTensorsInfo;  // TODO: better allocation management
+
+
+
+int graphwindow_addData(__int64* rawTensorValues, int numRawTensors, __int64* layerTensorValues)
+{
+    // Raw tensor viz
     if (numRawTensors < maxGraphs)
     {
         for (int i = 0; i < numRawTensors; i++)
@@ -246,28 +275,106 @@ int graphwindow_addData(__int64* rawTensorValues, int numRawTensors, __int64* la
         }
 
         lastNumRawTensors = numRawTensors;
+    }
 
-        for (int i = 0; i < numlayerTensors; i++)
+    // Tensors by layer viz
+    for (int i = 0; i < numLayerTensors; i++)
+    {
+        layerTensorSamples[i][numSamples] = layerTensorValues[i];
+
+        
+        int layerIndex = layerTensorsInfo[i].layerIndex;
+        int tensorWithinLayerIndex = layerTensorsInfo[i].tensorWithinLayerIndex;
+
+        if (tensorWithinLayerIndex >= 0)
         {
-            layerTensorSamples[i][numSamples] = layerTensorValues[i];
+            layerSamples[numSamples][layerIndex * maxTensorsPerLayer + tensorWithinLayerIndex] = layerTensorValues[i];
         }
 
-        lastNumlayerTensors = numlayerTensors;
+        //TODO Input and ouput tensors
 
-        numSamples++; // TODO: atomic
     }
+
+    currentUISample = numSamples;
+
+    numSamples++; // TODO: atomic
 
     return 0;
 }
 
 
+std::vector<std::string> split(const std::string& str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::stringstream ss(str);
+    std::string token;
+    while (std::getline(ss, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+//TMP?
+//const auto tn = LLM_TN(LLM_ARCH_LLAMA);
+//std::string name = tn(LLM_TENSOR_OUTPUT);
+
+
 // Main code
 int graphwindow_main(llama_model* model)
 {
+    memset(layerSamples, 0, sizeof(layerSamples));
+
+    /// Data prep ////
+    numLayerTensors = model->tensors_by_name.size();
+
+    int curBlk = 0;
+    int curTensorWithinLayer = -1;
+    int i = 0;
+
+    for (auto& tensor : model->tensors_by_name)
+    {
+        LOG_INF("---- %s\n", tensor.first.c_str());
+
+        std::vector<std::string> result = split(tensor.first, '.' /*delimiter*/);
+
+        if (result[0].compare("token_embd") == 0)
+        {
+            layerTensorsInfo.push_back({ result[0], LAYER_INDEX_INPUT, 0, i});
+        }
+        else if (result[0].compare("output_norm") == 0)
+        {
+            layerTensorsInfo.push_back({ result[0], LAYER_INDEX_OUTPUT, 0, i });
+        }
+        else if (result[0].compare("blk") == 0)
+        {
+            int layerIndex = strtol(result[1].c_str(), nullptr, 10);
+
+            if (layerIndex == curBlk)
+            {
+                curTensorWithinLayer++;
+            }
+            else
+            {
+                curBlk = layerIndex;
+                curTensorWithinLayer = 0;
+            }
+
+            layerTensorsInfo.push_back({ result[2], layerIndex, curTensorWithinLayer, i });
+        }
+        else
+        {
+            assert(false);
+        }
+
+        i++;
+    }
+
     for (int i = 0; i < maxSamples; i++)
     {
         xs[i] = i;
     }
+
+    ////////////
+
 
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
@@ -336,6 +443,8 @@ int graphwindow_main(llama_model* model)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    ImPlot::GetStyle().Colormap = ImPlotColormap_Spectral;
+
     // Main loop
     bool done = false;
     while (!done)
@@ -379,10 +488,30 @@ int graphwindow_main(llama_model* model)
 
             if (uiMode == 0)
             {
+                // Layer mode
+                //ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+                //ImGui::SetNextWindowSize(GetWindowSize(), ImGuiCond_Always);
+                ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+                // ImPlot::ShowColormapSelector("Colormap");
+                //if (ImGui::DragInt2("Size", &rows, 10, 0, 10000))
+                //    generate_noise();
+                //if (ImGui::DragFloat("Scale", &scale, 0.001f, 0, 10))
+                //    generate_noise();
+                //if (ImGui::DragFloat("Scrub", &z, 0.1f, 0, 10))
+                //    generate_noise();
+                ImGui::DragInt("Sample", &currentUISample, 1, 0, numSamples);
+                static float mn = 0, mx = 1;
+                ImGui::DragFloatRange2("Range", &mn, &mx, 0.1f, -10, 10);
 
+                if (ImPlot::BeginPlot("##LayerTensors", ImVec2(800, 800), ImPlotFlags_None)) {
+                    ImPlot::SetupAxes("Layer", "Op", ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+                    ImPlot::PlotHeatmap("##T", (__int64*) layerSamples[currentUISample] /*perlin_data.data()*/, maxLayers, maxTensorsPerLayer, mn, mx, "%d", ImPlotPoint(0, 0), ImPlotPoint(1000, 1000), 0);
+                    ImPlot::EndPlot();
+                }
             }
             else if (uiMode == 1)
             {
+                // Raw tensor mode
                 if (ImPlot::BeginPlot("Tensor op time < 1000 us", ImVec2(1280, 300))) {
                     ImPlot::SetupAxes("Samples", "Time (us)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
                     for (int i = 0; i < lastNumRawTensors; i++)

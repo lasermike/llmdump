@@ -45,10 +45,10 @@ static bool is_interacting  = false;
 static bool need_insert_eot = false;
 
 int graphwindow_main(llama_model* model);
-int graphwindow_addData(__int64* values, int numValues, __int64* layerTensorValues, int numlayerTensors);
+int graphwindow_addData(__int64* values, int numValues, __int64* layerTensorValues);
 
 int64_t tensorDurationsUs[GGML_OP_COUNT];
-int64_t tensorOpDurationUs[TensorLayerOperationsMax];
+int64_t tensorByOpDurationUs[TensorLayerOperationsMax];
 
 static void print_usage(int argc, char ** argv) {
     (void) argc;
@@ -916,8 +916,8 @@ int main(int argc, char ** argv) {
                 }
                 is_interacting = false;
 
-                tensorStats_copy(tensorDurationsUs, tensorOpDurationUs);
-                graphwindow_addData(tensorDurationsUs, GGML_OP_COUNT, tensorOpDurationUs, TensorLayerOperationsMax);
+                tensorStats_copy(tensorDurationsUs, tensorByOpDurationUs);
+                graphwindow_addData(tensorDurationsUs, GGML_OP_COUNT, tensorByOpDurationUs);
 
                 tensorStats_reset();
 
