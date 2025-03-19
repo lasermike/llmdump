@@ -239,8 +239,11 @@ __int64 xs[maxSamples];
 // By Layer 
 int numModelLayerTensors = 0;
 int numGraphLayerTensors = 0;
-__int64 layerSamples[maxSamples][maxLayersIncludingInputOutput][maxTensorsPerLayer];
-//__int64 layerTensorSamples[maxLayerTensors][maxSamples];
+//__int64 layerSamples[maxSamples][maxLayersIncludingInputOutput][maxTensorsPerLayer];
+_int64* layerSamples = nullptr;
+
+int layerStride = 0;
+int sampleStride = 0;
 
 
 #define LAYER_INDEX_UNDEFINED -1
@@ -306,9 +309,10 @@ int graphwindow_addData(__int64* rawTensorValues, int numRawTensors, __int64* la
         int layerIndex = graphLayerTensorsInfo[i].layerIndex;
         int tensorWithinLayerIndex = graphLayerTensorsInfo[i].tensorWithinLayerIndex;
 
-        if (tensorWithinLayerIndex >= 0)
+        if (tensorWithinLayerIndex >= 0 && layerIndex >= 0)
         {
-            layerSamples[numSamples][layerIndex][tensorWithinLayerIndex] = layerTensorValues[i];
+            int sampleIndex = numSamples * sampleStride + layerIndex * layerStride + tensorWithinLayerIndex;
+            layerSamples[sampleIndex] = layerTensorValues[i];
         }
 
         //TODO Input and ouput tensors
@@ -357,6 +361,16 @@ int graphWindow_initLayerOps(struct ggml_cgraph* graph)
 
     }
 
+    assert(!layerSamples);
+
+    layerStride = numTensorsPerLayer;
+    sampleStride = layerStride * maxLayers;
+
+    int sampleBufferSize = maxSamples * maxLayers * numTensorsPerLayer;
+    layerSamples = new __int64[sampleBufferSize];
+
+    memset(layerSamples, 0, sizeof(__int64) * sampleBufferSize);
+
 
     //ggml_graph_print(graph);
 
@@ -387,16 +401,10 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     return tokens;
 }
 
-//TMP?
-//const auto tn = LLM_TN(LLM_ARCH_LLAMA);
-//std::string name = tn(LLM_TENSOR_OUTPUT);
-
 // Main code
 int graphwindow_main(llama_model* model)
 {
     /// Parse model info
-
-    memset(layerSamples, 0, sizeof(layerSamples));
 
     numModelLayerTensors = model->tensors_by_name.size();
 
@@ -567,21 +575,23 @@ int graphwindow_main(llama_model* model)
 
             if (uiMode == 0)
             {
-                // Layer mode
-                //ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-                //ImGui::SetNextWindowSize(GetWindowSize(), ImGuiCond_Always);
-                static ImPlotColormap map = ImPlotColormap_Viridis;
-                if (ImPlot::ColormapButton(ImPlot::GetColormapName(map), ImVec2(225, 0), map)) {
-                    map = (map + 1) % ImPlot::GetColormapCount();
-                    // We bust the color cache of our plots so that item colors will
-                    // resample the new colormap in the event that they have already
-                    // been created. See documentation in implot.h.
-                    ImPlot::BustColorCache("##Heatmap1");
-                    ImPlot::BustColorCache("##Heatmap2");
-                }
+                //// Layer mode
+                //static ImPlotColormap map = ImPlotColormap_Viridis;
+                //if (ImPlot::ColormapButton(ImPlot::GetColormapName(map), ImVec2(225, 0), map)) {
+                //    map = (map + 1) % ImPlot::GetColormapCount();
+                //    // We bust the color cache of our plots so that item colors will
+                //    // resample the new colormap in the event that they have already
+                //    // been created. See documentation in implot.h.
+                //    ImPlot::BustColorCache("##Heatmap1");
+                //    ImPlot::BustColorCache("##Heatmap2");
+                //}
 
-                ImGui::SameLine();
-                ImGui::LabelText("##Colormap Index", "%s", "Change Colormap");
+                //ImGui::SameLine();
+                //ImGui::LabelText("##Colormap Index", "%s", "Change Colormap");
+
+                ImGui::TextColored(ImVec4(1, 1, 0, 1), "Time(ms) per tensor op");
+
+
                 ImGui::SetNextItemWidth(225);
                 static float mn = 0, mx = 1;
                 ImGui::DragFloatRange2("Range", &mn, &mx, 0.1f, 0, 1000000);
@@ -596,15 +606,16 @@ int graphwindow_main(llama_model* model)
 
                 const ImPlotAxisFlags axes_flags = ImPlotAxisFlags_None; // ImPlotAxisFlags_Lock; // ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickMarks;
 
-                if (ImPlot::BeginPlot("##Heatmap1", ImVec2(1500, 800), ImPlotFlags_None)) {
+                if (ImPlot::BeginPlot("##Heatmap1", ImVec2(1500, 800), ImPlotFlags_NoMouseText)) {
+
                     ImPlot::SetupAxes("Op", "Layer", ImPlotAxisFlags_NoTickLabels, axes_flags);
-                    ImPlot::SetupAxisTicks(ImAxis_X1, 0, 28, numTensorsPerLayer, tensorNamePtrsPerLayer);
-                    ImPlot::SetupAxisTicks(ImAxis_Y1, 0, 28, 29, ylabels);
-                    ImPlot::PlotHeatmap("##T", (__int64*) layerSamples[currentUISample] , maxLayers, maxTensorsPerLayer, mn, mx, "%d", ImPlotPoint(0.0, 0.5), ImPlotPoint(numTensorsPerLayer, 29), 0);
+                    ImPlot::SetupAxisTicks(ImAxis_X1, 0, numTensorsPerLayer, numTensorsPerLayer, tensorNamePtrsPerLayer);
+                    ImPlot::SetupAxisTicks(ImAxis_Y1, 0, 28, maxLayers, ylabels);
+                    ImPlot::PlotHeatmap("##T", (__int64*) &(layerSamples[currentUISample * sampleStride]), maxLayers, numTensorsPerLayer, mn, mx, "%d", ImPlotPoint(0.0, 0.0), ImPlotPoint(numTensorsPerLayer, maxLayers), 0);
 
                     for (int i = 0; i < numTensorsPerLayer; ++i) {
                         // Adjust the y coordinate (here, 0.0) to position the text as needed.
-                        ImPlot::PlotText(tensorNamePtrsPerLayer[i], (double)i * 0.8, -4.0, ImVec2(0,0), ImPlotTextFlags_Vertical);
+                        ImPlot::PlotText(tensorNamePtrsPerLayer[i], (double)i + 0.5, -3.0, ImVec2(0,0), ImPlotTextFlags_Vertical);
                     }
 
                     ImPlot::EndPlot();
