@@ -1611,7 +1611,8 @@ static struct ggml_tensor * ggml_new_tensor_impl(
         /*.data         =*/ obj_alloc_size > 0 ? (void *)(result + 1) : data,
         /*.name         =*/ { 0 },
         /*.extra        =*/ NULL,
-        /*.padding      =*/ { 0 },
+        /*.layerNumber  =*/ 0,
+        /*.layerOpNumber=*/ 0,
     };
 
     // TODO: this should not be needed as long as we don't rely on aligned SIMD loads
@@ -2925,6 +2926,9 @@ static struct ggml_tensor * ggml_cpy_impl(
     result->src[0] = a;
     result->src[1] = b;
 
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
+
     return result;
 }
 
@@ -3009,6 +3013,9 @@ struct ggml_tensor * ggml_cont_4d(
     result->op     = GGML_OP_CONT;
     result->src[0] = a;
 
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
+
     return result;
 }
 
@@ -3028,6 +3035,9 @@ struct ggml_tensor * ggml_reshape(
     result->op     = GGML_OP_RESHAPE;
     result->src[0] = a;
 
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
+
     return result;
 }
 
@@ -3044,6 +3054,9 @@ struct ggml_tensor * ggml_reshape_1d(
 
     result->op     = GGML_OP_RESHAPE;
     result->src[0] = a;
+
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
 
     return result;
 }
@@ -3063,6 +3076,9 @@ struct ggml_tensor * ggml_reshape_2d(
     result->op     = GGML_OP_RESHAPE;
     result->src[0] = a;
 
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
+
     return result;
 }
 
@@ -3081,6 +3097,9 @@ struct ggml_tensor * ggml_reshape_3d(
 
     result->op     = GGML_OP_RESHAPE;
     result->src[0] = a;
+
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
 
     return result;
 }
@@ -3102,6 +3121,9 @@ struct ggml_tensor * ggml_reshape_4d(
     result->op     = GGML_OP_RESHAPE;
     result->src[0] = a;
 
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
+
     return result;
 }
 
@@ -3118,6 +3140,9 @@ static struct ggml_tensor * ggml_view_impl(
 
     result->op     = GGML_OP_VIEW;
     result->src[0] = a;
+
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
 
     return result;
 }
@@ -3272,6 +3297,9 @@ struct ggml_tensor * ggml_transpose(
 
     result->op     = GGML_OP_TRANSPOSE;
     result->src[0] = a;
+
+    result->layerNumber = a->layerNumber;
+    result->layerOpNumber = a->layerOpNumber;
 
     return result;
 }
@@ -5764,6 +5792,13 @@ static void ggml_visit_parents(struct ggml_cgraph * cgraph, struct ggml_tensor *
 
         if (strlen(node->name) == 0) {
             ggml_format_name(node, "node_%d", cgraph->n_nodes);
+
+            // Hack?
+            if (node->layerNumber == 0 && node->src[0])
+            {
+                node->layerNumber = node->src[0]->layerNumber;
+                node->layerOpNumber = node->src[0]->layerOpNumber;
+            }
         }
 
         cgraph->nodes[cgraph->n_nodes] = node;

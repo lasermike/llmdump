@@ -604,7 +604,8 @@ extern "C" {
 
         void * extra; // extra things e.g. for ggml-cuda.cu
 
-        char padding[8];
+        int32_t layerNumber;
+        int32_t layerOpNumber; // could be smaller!
     };
 
     static const size_t GGML_TENSOR_SIZE = sizeof(struct ggml_tensor);

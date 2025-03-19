@@ -1334,6 +1334,10 @@ extern "C" {
     LLAMA_API void                           llama_perf_sampler_print(const struct llama_sampler * chain);
     LLAMA_API void                           llama_perf_sampler_reset(      struct llama_sampler * chain);
 
+
+    typedef void (*builtGraphCbType)(struct ggml_cgraph*);
+
+    LLAMA_API int setBuiltGraphCb(builtGraphCbType graphCb);
 #ifdef __cplusplus
 }
 #endif

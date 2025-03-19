@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <functional>
 
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 #include <signal.h>
@@ -32,6 +33,8 @@
 #pragma warning(disable: 4244 4267) // possible loss of data
 #endif
 
+struct ggml_cgraph;
+
 static const char * DEFAULT_SYSTEM_MESSAGE = "You are a helpful assistant";
 
 static llama_context           ** g_ctx;
@@ -45,6 +48,7 @@ static bool is_interacting  = false;
 static bool need_insert_eot = false;
 
 int graphwindow_main(llama_model* model);
+int graphWindow_initLayerOps(struct ggml_cgraph* graph);
 int graphwindow_addData(__int64* values, int numValues, __int64* layerTensorValues);
 
 int64_t tensorDurationsUs[GGML_OP_COUNT];
@@ -92,6 +96,15 @@ static void sigint_handler(int signo) {
 }
 #endif
 
+///
+
+
+void builtGraphCb(struct ggml_cgraph* graph) {
+
+    graphWindow_initLayerOps(graph);
+};
+
+///
 
 int main(int argc, char ** argv) {
     common_params params;
@@ -153,9 +166,16 @@ int main(int argc, char ** argv) {
 
     std::vector<common_chat_msg> chat_msgs;
 
+
+    setBuiltGraphCb(builtGraphCb);
+
+
     // load the model and apply lora adapter, if any
     LOG_INF("%s: load the model and apply lora adapter, if any\n", __func__);
     common_init_result llama_init = common_init_from_params(params);
+
+    setBuiltGraphCb(nullptr); // TODO: analyze changes to graph after each rebuild
+
 
     model = llama_init.model.get();
     ctx = llama_init.context.get();

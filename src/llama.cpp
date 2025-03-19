@@ -8146,6 +8146,27 @@ static struct ggml_cgraph * llama_build_graph_k_shift(llama_context & lctx) {
     return result;
 }
 
+std::vector<std::string> knownLayerTensors;
+std::vector<std::string> knownInputOutputTensors;
+
+int FindIndexOrAddToList(std::vector<std::string>& list, const char * name) {
+
+    int result = -1;
+
+    auto it = std::find(list.begin(), list.end(), name);
+
+    if (it != list.end()) {
+        result = std::distance(list.begin(), it);
+    }
+    else {
+        result = list.size();
+        list.push_back(name);
+    }
+
+    return result;
+}
+
+
 static struct ggml_cgraph * llama_build_graph(
          llama_context & lctx,
     const llama_ubatch & ubatch,
@@ -8154,10 +8175,19 @@ static struct ggml_cgraph * llama_build_graph(
 
     // this callback allows us to apply custom logic to each tensor (e.g. ggml-alloc, offloading, etc.)
     llm_build_cb cb = [&](struct ggml_tensor * cur, const char * name, int il) {
+        int layerOpNumber = -1;
+
         if (il >= 0) {
             ggml_format_name(cur, "%s-%d", name, il);
+
+            // Find index of tensor within the layer
+            layerOpNumber = FindIndexOrAddToList(knownLayerTensors, name);
+
         } else {
             ggml_set_name(cur, name);
+
+            // Find index of tensor within the layer
+            layerOpNumber = FindIndexOrAddToList(knownInputOutputTensors, name);
         }
 
         if (!lctx.cparams.offload_kqv) {
@@ -8182,6 +8212,9 @@ static struct ggml_cgraph * llama_build_graph(
                 }
             }
         }
+
+        cur->layerNumber = il;
+        cur->layerOpNumber = layerOpNumber;
     };
 
     struct ggml_cgraph * result = NULL;
@@ -8571,6 +8604,22 @@ static int llama_prepare_ubatch(
     return 0;
 }
 
+
+////// Perf Stuff
+
+//using ggml_graph_cb = std::function<void(struct ggml_cgraph* graph)>;
+
+
+builtGraphCbType builtGraphCb = nullptr;
+
+LLAMA_API int setBuiltGraphCb(builtGraphCbType graphCb)
+{
+    builtGraphCb = graphCb;
+    return 0;
+}
+
+/////////
+
 // decode a batch of tokens by evaluating the transformer
 // in case of unsuccessful decoding (error or warning),
 // the kv_cache state will be returned to its original state
@@ -8694,6 +8743,11 @@ static int llama_decode_impl(
             if (kv_self.head >= kv_self.size) {
                 kv_self.head = 0;
             }
+        }
+
+        if (builtGraphCb)
+        {
+            builtGraphCb(gf);
         }
 
         // plot the computation graph in dot format (for debugging purposes)
