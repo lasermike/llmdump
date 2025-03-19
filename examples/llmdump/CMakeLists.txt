@@ -1,5 +1,6 @@
 set(TARGET llmdump)
-add_executable(${TARGET} main.cpp)
+add_executable(${TARGET} main.cpp graphwindow.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_impl_dx12.cpp imgui/imgui_impl_win32.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/implot.cpp imgui/implot_items.cpp)
+target_include_directories(${TARGET} PRIVATE imgui)
 install(TARGETS ${TARGET} RUNTIME)
-target_link_libraries(${TARGET} PRIVATE common llama ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${TARGET} PRIVATE common llama D3D12 DXGI ${CMAKE_THREAD_LIBS_INIT})
 target_compile_features(${TARGET} PRIVATE cxx_std_17)
