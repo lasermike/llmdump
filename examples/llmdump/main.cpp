@@ -167,14 +167,14 @@ int main(int argc, char ** argv) {
     std::vector<common_chat_msg> chat_msgs;
 
 
-    setBuiltGraphCb(builtGraphCb);
+    //setBuiltGraphCb(builtGraphCb);
 
 
     // load the model and apply lora adapter, if any
     LOG_INF("%s: load the model and apply lora adapter, if any\n", __func__);
     common_init_result llama_init = common_init_from_params(params);
 
-    setBuiltGraphCb(nullptr); // TODO: analyze changes to graph after each rebuild
+    //setBuiltGraphCb(nullptr); // TODO: analyze changes to graph after each rebuild
 
 
     model = llama_init.model.get();

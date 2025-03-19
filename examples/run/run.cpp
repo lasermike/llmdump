@@ -79,6 +79,7 @@ class Opt {
         ctx_params           = llama_context_default_params();
         model_params         = llama_model_default_params();
         context_size_default = ctx_params.n_batch;
+        n_threads_default    = ctx_params.n_threads;
         ngl_default          = model_params.n_gpu_layers;
         common_params_sampling sampling;
         temperature_default = sampling.temp;
@@ -104,6 +105,7 @@ class Opt {
 
         ctx_params.n_batch        = context_size >= 0 ? context_size : context_size_default;
         ctx_params.n_ctx          = ctx_params.n_batch;
+        ctx_params.n_threads = ctx_params.n_threads_batch = n_threads >= 0 ? n_threads : n_threads_default;
         model_params.n_gpu_layers = ngl >= 0 ? ngl : ngl_default;
         temperature               = temperature >= 0 ? temperature : temperature_default;
 
@@ -116,12 +118,12 @@ class Opt {
     std::string chat_template_file;
     std::string          user;
     bool                 use_jinja   = false;
-    int                  context_size = -1, ngl = -1;
+    int                  context_size = -1, ngl = -1, n_threads = -1;
     float                temperature = -1;
     bool                 verbose     = false;
 
   private:
-    int   context_size_default = -1, ngl_default = -1;
+    int   context_size_default = -1, ngl_default = -1, n_threads_default = -1;
     float temperature_default = -1;
     bool  help                = false;
 
@@ -159,53 +161,94 @@ class Opt {
         return 0;
     }
 
+    int parse_options_with_value(int argc, const char ** argv, int & i, bool & options_parsing) {
+        if (options_parsing && (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--context-size") == 0)) {
+            if (handle_option_with_value(argc, argv, i, context_size) == 1) {
+                return 1;
+            }
+        } else if (options_parsing &&
+                   (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "-ngl") == 0 || strcmp(argv[i], "--ngl") == 0)) {
+            if (handle_option_with_value(argc, argv, i, ngl) == 1) {
+                return 1;
+            }
+        } else if (options_parsing && (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--threads") == 0)) {
+            if (handle_option_with_value(argc, argv, i, n_threads) == 1) {
+                return 1;
+            }
+        } else if (options_parsing && strcmp(argv[i], "--temp") == 0) {
+            if (handle_option_with_value(argc, argv, i, temperature) == 1) {
+                return 1;
+            }
+        } else if (options_parsing && strcmp(argv[i], "--chat-template-file") == 0) {
+            if (handle_option_with_value(argc, argv, i, chat_template_file) == 1) {
+                return 1;
+            }
+            use_jinja = true;
+        } else {
+            return 2;
+        }
+
+        return 0;
+    }
+
+    int parse_options(const char ** argv, int & i, bool & options_parsing) {
+        if (options_parsing && (parse_flag(argv, i, "-v", "--verbose") || parse_flag(argv, i, "-v", "--log-verbose"))) {
+            verbose = true;
+        } else if (options_parsing && strcmp(argv[i], "--jinja") == 0) {
+            use_jinja = true;
+        } else if (options_parsing && parse_flag(argv, i, "-h", "--help")) {
+            help = true;
+            return 0;
+        } else if (options_parsing && strcmp(argv[i], "--") == 0) {
+            options_parsing = false;
+        } else {
+            return 2;
+        }
+
+        return 0;
+    }
+
+    int parse_positional_args(const char ** argv, int & i, int & positional_args_i) {
+        if (positional_args_i == 0) {
+            if (!argv[i][0] || argv[i][0] == '-') {
+                return 1;
+            }
+
+            ++positional_args_i;
+            model_ = argv[i];
+        } else if (positional_args_i == 1) {
+            ++positional_args_i;
+            user = argv[i];
+        } else {
+            user += " " + std::string(argv[i]);
+        }
+
+        return 0;
+    }
+
     int parse(int argc, const char ** argv) {
         bool options_parsing   = true;
         for (int i = 1, positional_args_i = 0; i < argc; ++i) {
-            if (options_parsing && (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--context-size") == 0)) {
-                if (handle_option_with_value(argc, argv, i, context_size) == 1) {
-                    return 1;
-                }
-            } else if (options_parsing &&
-                       (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "-ngl") == 0 || strcmp(argv[i], "--ngl") == 0)) {
-                if (handle_option_with_value(argc, argv, i, ngl) == 1) {
-                    return 1;
-                }
-            } else if (options_parsing && strcmp(argv[i], "--temp") == 0) {
-                if (handle_option_with_value(argc, argv, i, temperature) == 1) {
-                    return 1;
-                }
-            } else if (options_parsing &&
-                       (parse_flag(argv, i, "-v", "--verbose") || parse_flag(argv, i, "-v", "--log-verbose"))) {
-                verbose = true;
-            } else if (options_parsing && strcmp(argv[i], "--jinja") == 0) {
-                use_jinja = true;
-            } else if (options_parsing && strcmp(argv[i], "--chat-template-file") == 0){
-                if (handle_option_with_value(argc, argv, i, chat_template_file) == 1) {
-                    return 1;
-                }
-                use_jinja = true;
-            } else if (options_parsing && parse_flag(argv, i, "-h", "--help")) {
-                help = true;
-                return 0;
-            } else if (options_parsing && strcmp(argv[i], "--") == 0) {
-                options_parsing = false;
-            } else if (positional_args_i == 0) {
-                if (!argv[i][0] || argv[i][0] == '-') {
-                    return 1;
-                }
+            int ret = parse_options_with_value(argc, argv, i, options_parsing);
+            if (ret == 0) {
+                continue;
+            } else if (ret == 1) {
+                return ret;
+            }
 
-                ++positional_args_i;
-                model_ = argv[i];
-            } else if (positional_args_i == 1) {
-                ++positional_args_i;
-                user = argv[i];
-            } else {
-                user += " " + std::string(argv[i]);
+            ret = parse_options(argv, i, options_parsing);
+            if (ret == 0) {
+                continue;
+            } else if (ret == 1) {
+                return ret;
+            }
+
+            if (parse_positional_args(argv, i, positional_args_i)) {
+                return 1;
             }
         }
 
-        if (model_.empty()){
+        if (model_.empty()) {
             return 1;
         }
 
@@ -232,6 +275,8 @@ class Opt {
             "      Number of GPU layers (default: %d)\n"
             "  --temp <value>\n"
             "      Temperature (default: %.1f)\n"
+            "  -t, --threads <value>\n"
+            "      Number of threads to use during generation (default: %d)\n"
             "  -v, --verbose, --log-verbose\n"
             "      Set verbosity level to infinity (i.e. log all messages, useful for debugging)\n"
             "  -h, --help\n"
@@ -260,7 +305,7 @@ class Opt {
             "  llama-run file://some-file3.gguf\n"
             "  llama-run --ngl 999 some-file4.gguf\n"
             "  llama-run --ngl 999 some-file5.gguf Hello World\n",
-            context_size_default, ngl_default, temperature_default);
+            context_size_default, ngl_default, temperature_default, n_threads_default);
     }
 };
 
@@ -323,25 +368,17 @@ class File {
         return 0;
     }
 
-    std::string read_all(const std::string & filename){
-        open(filename, "r");
-        lock();
-        if (!file) {
-            printe("Error opening file '%s': %s", filename.c_str(), strerror(errno));
-            return "";
-        }
-
+    std::string to_string() {
         fseek(file, 0, SEEK_END);
-        size_t size = ftell(file);
+        const size_t size = ftell(file);
         fseek(file, 0, SEEK_SET);
-
         std::string out;
         out.resize(size);
-        size_t read_size = fread(&out[0], 1, size, file);
+        const size_t read_size = fread(&out[0], 1, size, file);
         if (read_size != size) {
-            printe("Error reading file '%s': %s", filename.c_str(), strerror(errno));
-            return "";
+            printe("Error reading file: %s", strerror(errno));
         }
+
         return out;
     }
 
@@ -899,7 +936,7 @@ static int apply_chat_template(const struct common_chat_templates * tmpls, Llama
 // Function to tokenize the prompt
 static int tokenize_prompt(const llama_vocab * vocab, const std::string & prompt,
                            std::vector<llama_token> & prompt_tokens, const LlamaData & llama_data) {
-    const bool is_first = llama_get_kv_cache_used_cells(llama_data.context.get()) == 0;
+    const bool is_first = llama_kv_self_used_cells(llama_data.context.get()) == 0;
 
     const int n_prompt_tokens = -llama_tokenize(vocab, prompt.c_str(), prompt.size(), NULL, 0, is_first, true);
     prompt_tokens.resize(n_prompt_tokens);
@@ -915,7 +952,7 @@ static int tokenize_prompt(const llama_vocab * vocab, const std::string & prompt
 // Check if we have enough space in the context to evaluate this batch
 static int check_context_size(const llama_context_ptr & ctx, const llama_batch & batch) {
     const int n_ctx      = llama_n_ctx(ctx.get());
-    const int n_ctx_used = llama_get_kv_cache_used_cells(ctx.get());
+    const int n_ctx_used = llama_kv_self_used_cells(ctx.get());
     if (n_ctx_used + batch.n_tokens > n_ctx) {
         printf(LOG_COL_DEFAULT "\n");
         printe("context size exceeded\n");
@@ -985,7 +1022,8 @@ static int generate(LlamaData & llama_data, const std::string & prompt, std::str
 }
 
 static int read_user_input(std::string & user_input) {
-    static const char * prompt_prefix = "> ";
+    static const char * prompt_prefix_env = std::getenv("LLAMA_PROMPT_PREFIX");
+    static const char * prompt_prefix     = prompt_prefix_env ? prompt_prefix_env : "> ";
 #ifdef WIN32
     printf("\r" LOG_CLR_TO_EOL LOG_COL_DEFAULT "%s", prompt_prefix);
 
@@ -1098,58 +1136,65 @@ static int get_user_input(std::string & user_input, const std::string & user) {
 
 // Reads a chat template file to be used
 static std::string read_chat_template_file(const std::string & chat_template_file) {
-    if(chat_template_file.empty()){
-        return "";
-    }
-
     File file;
-    std::string chat_template = "";
-    chat_template = file.read_all(chat_template_file);
-    if(chat_template.empty()){
+    if (!file.open(chat_template_file, "r")) {
         printe("Error opening chat template file '%s': %s", chat_template_file.c_str(), strerror(errno));
         return "";
     }
-    return chat_template;
+
+    return file.to_string();
+}
+
+static int process_user_message(const Opt & opt, const std::string & user_input, LlamaData & llama_data,
+                                const common_chat_templates_ptr & chat_templates, int & prev_len,
+                                const bool stdout_a_terminal) {
+    add_message("user", opt.user.empty() ? user_input : opt.user, llama_data);
+    int new_len;
+    if (apply_chat_template_with_error_handling(chat_templates.get(), llama_data, true, new_len, opt.use_jinja) < 0) {
+        return 1;
+    }
+
+    std::string prompt(llama_data.fmtted.begin() + prev_len, llama_data.fmtted.begin() + new_len);
+    std::string response;
+    if (generate_response(llama_data, prompt, response, stdout_a_terminal)) {
+        return 1;
+    }
+
+    if (!opt.user.empty()) {
+        return 2;
+    }
+
+    add_message("assistant", response, llama_data);
+    if (apply_chat_template_with_error_handling(chat_templates.get(), llama_data, false, prev_len, opt.use_jinja) < 0) {
+        return 1;
+    }
+
+    return 0;
 }
 
 // Main chat loop function
-static int chat_loop(LlamaData & llama_data, const std::string & user, const std::string & chat_template_file, bool use_jinja) {
+static int chat_loop(LlamaData & llama_data, const Opt & opt) {
     int prev_len = 0;
     llama_data.fmtted.resize(llama_n_ctx(llama_data.context.get()));
-
-    std::string chat_template = "";
-    if(!chat_template_file.empty()){
-        chat_template = read_chat_template_file(chat_template_file);
+    std::string chat_template;
+    if (!opt.chat_template_file.empty()) {
+        chat_template = read_chat_template_file(opt.chat_template_file);
     }
-    auto chat_templates = common_chat_templates_init(llama_data.model.get(), chat_template.empty() ? nullptr : chat_template);
 
+    common_chat_templates_ptr chat_templates    = common_chat_templates_init(llama_data.model.get(), chat_template);
     static const bool stdout_a_terminal = is_stdout_a_terminal();
     while (true) {
         // Get user input
         std::string user_input;
-        if (get_user_input(user_input, user) == 1) {
+        if (get_user_input(user_input, opt.user) == 1) {
             return 0;
         }
 
-        add_message("user", user.empty() ? user_input : user, llama_data);
-        int new_len;
-        if (apply_chat_template_with_error_handling(chat_templates.get(), llama_data, true, new_len, use_jinja) < 0) {
+        const int ret = process_user_message(opt, user_input, llama_data, chat_templates, prev_len, stdout_a_terminal);
+        if (ret == 1) {
             return 1;
-        }
-
-        std::string prompt(llama_data.fmtted.begin() + prev_len, llama_data.fmtted.begin() + new_len);
-        std::string response;
-        if (generate_response(llama_data, prompt, response, stdout_a_terminal)) {
-            return 1;
-        }
-
-        if (!user.empty()) {
+        } else if (ret == 2) {
             break;
-        }
-
-        add_message("assistant", response, llama_data);
-        if (apply_chat_template_with_error_handling(chat_templates.get(), llama_data, false, prev_len, use_jinja) < 0) {
-            return 1;
         }
     }
 
@@ -1208,7 +1253,7 @@ int main(int argc, const char ** argv) {
         return 1;
     }
 
-    if (chat_loop(llama_data, opt.user, opt.chat_template_file, opt.use_jinja)) {
+    if (chat_loop(llama_data, opt)) {
         return 1;
     }
 
